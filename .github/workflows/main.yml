@@ -1,13 +1,32 @@
-- uses: webfactory/ssh-agent@v0.9.1
-  with:
-    ssh-private-key: ${{ secrets.EC2_SSH_KEY }}
+name: Deploy HTML to EC2
 
-- name: Add EC2 host to known_hosts
-  run: |
-    mkdir -p ~/.ssh
-    ssh-keyscan -H ${{ secrets.EC2_PUBLIC_IP }} >> ~/.ssh/known_hosts
+on:
+  push:
+    branches:
+      - main  # Or your deployment branch
 
-- name: Copy HTML folder to EC2
-  run: |
-    mkdir -p /home/ec2-user/html
-    scp -r ./html/* ec2-user@${{ secrets.EC2_PUBLIC_IP }}:/home/ec2-user/html/
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up SSH agent
+      uses: webfactory/ssh-agent@v0.9.1
+      with:
+        ssh-private-key: ${{ secrets.EC2_SSH_KEY }}
+
+    - name: Add EC2 host to known_hosts
+      run: |
+        mkdir -p ~/.ssh
+        ssh-keyscan -H ${{ secrets.EC2_PUBLIC_IP }} >> ~/.ssh/known_hosts
+
+    - name: Ensure target folder exists on EC2
+      run: |
+        ssh ec2-user@${{ secrets.EC2_PUBLIC_IP }} "mkdir -p /home/ec2-user/html"
+
+    - name: Copy HTML folder to EC2
+      run: |
+        scp -r ./html/* ec2-user@${{ secrets.EC2_PUBLIC_IP }}:/home/ec2-user/html/
