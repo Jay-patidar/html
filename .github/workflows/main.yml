@@ -29,9 +29,9 @@ jobs:
     # 4️⃣ Ensure the target folder exists on EC2
     - name: Create target folder on EC2
       run: |
-        ssh ec2-user@${{ secrets.EC2_PUBLIC_IP }} "mkdir -p /home/ec2-user/html"
+        ssh ubuntu@${{ secrets.EC2_PUBLIC_IP }} "mkdir -p /home/ubuntu/html"
 
     # 5️⃣ Copy repository contents to EC2
     - name: Copy files to EC2
       run: |
-        scp -r ./ ec2-user@${{ secrets.EC2_PUBLIC_IP }}:/home/ec2-user/html/
+        scp -r ./ ubuntu@${{ secrets.EC2_PUBLIC_IP }}:/home/ubuntu/html/
