@@ -3,30 +3,35 @@ name: Deploy HTML to EC2
 on:
   push:
     branches:
-      - main  # Or your deployment branch
+      - main   # deploys on push to main branch
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
+    # 1️⃣ Checkout your repository
     - name: Checkout repository
       uses: actions/checkout@v3
 
-    - name: Set up SSH agent
+    # 2️⃣ Set up SSH agent with your private key
+    - name: Set up SSH
       uses: webfactory/ssh-agent@v0.9.1
       with:
         ssh-private-key: ${{ secrets.EC2_SSH_KEY }}
 
-    - name: Add EC2 host to known_hosts
+    # 3️⃣ Add EC2 host to known_hosts to prevent host key verification errors
+    - name: Add EC2 to known_hosts
       run: |
         mkdir -p ~/.ssh
         ssh-keyscan -H ${{ secrets.EC2_PUBLIC_IP }} >> ~/.ssh/known_hosts
 
-    - name: Ensure target folder exists on EC2
+    # 4️⃣ Ensure the target folder exists on EC2
+    - name: Create target folder on EC2
       run: |
         ssh ec2-user@${{ secrets.EC2_PUBLIC_IP }} "mkdir -p /home/ec2-user/html"
 
-    - name: Copy HTML folder to EC2
+    # 5️⃣ Copy repository contents to EC2
+    - name: Copy files to EC2
       run: |
-        scp -r ./html/* ec2-user@${{ secrets.EC2_PUBLIC_IP }}:/home/ec2-user/
+        scp -r ./ ec2-user@${{ secrets.EC2_PUBLIC_IP }}:/home/ec2-user/html/
