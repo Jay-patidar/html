@@ -1,5 +1,6 @@
-name: Deploy Website to EC2
+name: Deploy Webpage to EC2
 
+# Trigger pipeline on push to main branch
 on:
   push:
     branches:
@@ -10,22 +11,22 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Checkout the repository
-      - name: Checkout Code
+      # 1. Checkout code
+      - name: Checkout Repository
         uses: actions/checkout@v3
 
-      # 2. Set up SSH key for EC2 access
+      # 2. Set up SSH key
       - name: Setup SSH
         uses: webfactory/ssh-agent@v0.8.1
         with:
           ssh-private-key: ${{ secrets.EC2_SSH_KEY }}
 
-      # 3. Copy files to EC2
-      - name: Copy Files to EC2
+      # 3. Copy website files to EC2
+      - name: Deploy Files to EC2
         run: |
-          scp -r ./html/ ec2-user@13.203.229.13:/var/www/html/
+          scp -r ./website-folder/* ec2-user@${{ secrets.EC2_PUBLIC_IP }}:/var/www/html/
 
-      # 4. Restart web server (optional, if using Apache/Nginx)
+      # 4. Restart web server (Nginx example)
       - name: Restart Web Server
         run: |
-          ssh ec2-user@13.203.229.13 "sudo systemctl restart nginx"
+          ssh ec2-user@${{ secrets.EC2_PUBLIC_IP }} "sudo systemctl restart nginx"
